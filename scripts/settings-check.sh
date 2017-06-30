@@ -1,186 +1,81 @@
 #!/bin/sh
 #
-# Check if packages are missing for my configuration
+# DESCRIPTION
+# This script checks whether all packages are installed and displays result
+# List of required packages is read from config file
+# Usual config file is ~.config/linux-settings-manager
+#
 
+
+# ------------------------------------------------------------------------------
+# Constants / Vars
+# ------------------------------------------------------------------------------
+CONFIG_FILE="${HOME}/.config/linux-settings-manager/list-packages.conf"
+
+# Internal use
 COUNT_TOTAL=0
 COUNT_MISSING=0
-
-# Constants
-NORMAL="\033[0m"
-RED="\033[31m"
-GREEN="\033[32m"
+COLOR_NORMAL="\033[0m"
+COLOR_RED="\033[31m"
+COLOR_GREEN="\033[32m"
 
 
 # ------------------------------------------------------------------------------
 # ASSET FUNCTIONS
 # ------------------------------------------------------------------------------
 
-# Check whether package exists
-# Param 1 -> package name to test
+# Check whether package exists.
+# \param 1 Package name to test.
 check_package(){
     COUNT_TOTAL=$((COUNT_TOTAL + 1))
     which "$1" > '/dev/null' 2>&1
-    if [ $? -eq 1 ]
-    then
-        echo -e "   $RED*[MISSING]$NORMAL $1"
+    if [ $? -eq 1 ]; then
+        echo -e "   ${COLOR_RED}*[MISSING]${COLOR_NORMAL} $1"
         COUNT_MISSING=$((COUNT_MISSING + 1))
     else
-        echo -e "    $GREEN[PRESENT]$NORMAL $1"
+        echo -e "    ${COLOR_GREEN}[PRESENT]${COLOR_NORMAL} $1"
     fi
 }
 
-# Display one section separator
+# Display one section separator.
 show_section(){
-    echo '-' $1
+    echo '-' "$1"
+}
+
+# Parse the given file.
+# \param 1 The file to parse.
+parse_file(){
+    # Config file must exist
+    if [ ! -f "$1" ];then
+        echo -e "${COLOR_RED}[ERROR] '$1' doesn't exists...${COLOR_NORMAL}"
+        return 42
+    fi
+    while read -r line; do
+        prefix=$(echo "$line" | cut -c 1)
+        word=$(echo "$line" | cut -c 2-)
+        if [ -z "$line" ] ; then
+            continue
+        elif [ $prefix = '#' ]; then
+            show_section $word
+        else
+            check_package "$line"
+        fi
+    done < "$1"
+    return 0
 }
 
 
 # ------------------------------------------------------------------------------
-# START SCRIPT
+# SCRIPT EXECUTION
 # ------------------------------------------------------------------------------
-clear
 echo "-----------------------------------"
-echo " Setup checking"
+echo " Check Linux Packages"
 echo "-----------------------------------"
 
+parse_file "$CONFIG_FILE"
 
-# ------------------------------------------------------------------------------
-# CHECK PACKAGES
-# ------------------------------------------------------------------------------
-
-# --- WORKSPACE ---
-show_section 'Workspace'
-check_package 'awesome'
-check_package 'xinit'
-check_package 'startx'
-check_package 'i3'
-
-
-# --- UTILITIES ---
-show_section 'Utilities'
-check_package 'urxvt'
-check_package 'terminator'
-check_package 'ranger'
-check_package 'xrandr'
-check_package 'xev'
-check_package 'xclip'
-check_package 'tar'
-check_package 'unrar'
-check_package 'unzip'
-check_package 'ntfs-3g'
-check_package 'tar'
-check_package 'acpi'
-check_package 'top'
-check_package 'htop'
-check_package 'minicom'
-check_package 'screen'
-check_package 'rsync'
-check_package 'xfce4-screenshooter'
-
-
-# --- PROGRAMMING ---
-show_section 'Programming'
-# Editors / Tools
-check_package 'vim'
-check_package 'nvim'
-check_package 'emacs'
-check_package 'git'
-check_package 'svn'
-check_package 'ctags'
-check_package 'visual-paradigm'
-# Lua
-check_package 'lua'
-# Python
-check_package 'python2'
-check_package 'python3'
-check_package 'pip'
-check_package 'pip2'
-# OCaml
-check_package 'opam'
-check_package 'ocaml'
-check_package 'ocamlbuild'
-check_package 'ocamldebug'
-# Java
-check_package 'java'
-check_package 'javac'
-# C / C++
-check_package 'gcc'
-check_package 'g++'
-check_package 'gdb'
-check_package 'cmake'
-check_package 'ccmake'
-check_package 'clang'
-
-
-# --- SECURITY ---
-show_section 'Security'
-check_package 'sflock'
-check_package 'gpg'
-check_package 'keepassx2'
-check_package 'iptables'
-check_package 'nslookup'
-check_package 'ssh'
-check_package 'strings'
-check_package 'hexdump'
-check_package 'objdump'
-check_package 'md5sum'
-check_package 'readelf'
-check_package 'file'
-check_package 'ltrace'
-check_package 'strace'
-check_package 'ldd'
-check_package 'xxd'
-check_package 'netstat'
-check_package 'ldd'
-check_package 'netcat'
-
-
-# --- INTERNET ---
-show_section 'Internet'
-check_package 'nmcli'
-check_package 'wpa_supplicant'
-check_package 'dhcpcd'
-check_package 'iw'
-check_package 'wifi-menu'
-check_package 'lynx'
-check_package 'elinks'
-check_package 'firefox'
-check_package 'chromium'
-check_package 'wget'
-check_package 'docker'
-
-
-# --- MULTIMEDIA ---
-show_section 'Multimedia'
-check_package 'imv'
-check_package 'fbi'
-check_package 'alsamixer'
-check_package 'liferea'
-check_package 'vlc'
-check_package 'calibre'
-
-
-# --- DOCUMENTS ---
-show_section 'Documents'
-check_package 'pdflatex'
-check_package 'atril'
-check_package 'libreoffice'
-check_package 'pcmanfm'
-
-
-# --- SCIENCE ---
-show_section 'Science'
-
-
-# --- OTHER ---
-show_section 'Other'
-check_package 'adb'
-
-
-# ------------------------------------------------------------------------------
-# SHOW ME THE RESULT!! :p
-# ------------------------------------------------------------------------------
+# Show me the result!! :p
 echo "-----------------------------------"
 echo " $COUNT_MISSING missing packages ($(($COUNT_TOTAL - $COUNT_MISSING))/$COUNT_TOTAL)"
 echo "-----------------------------------"
-
+return 0
