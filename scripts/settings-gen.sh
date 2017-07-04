@@ -1,11 +1,20 @@
 #!/bin/sh
 #
-# DESCRIPTION
-# Generate all symlinks for settings
+# Since:    June 2017
+# Author:   Constantin Masson
 #
-# SETTINGS LOCATION
-# Config to generate are located in the .gen.conf file
-# Currently, the path to this file is hard coded in CONFIG_FILE var (Not far below)
+# DESCRIPTION
+# Generate all symlinks for your setting according to confi file content.
+#
+# CONFIG FILE
+# Located at CONFIG_DIR with extension CONFIG_EXT
+# Script with process each of them
+#
+# WARNING
+# Symlink creation is currently forced, which means, if a file with same name
+# already exists, it will be replaced without warning!
+# Ex: crea_ln /mnt/data/settings/f1 ~/.config/toto/f1
+#       -> if ~/.conf/toto/f1 already exists, it will be deleted
 
 
 # -----------------------------------------------------------------------------
@@ -20,33 +29,34 @@ COLOR_GRAY="\033[30m"
 ERRORS_COUNTER=0
 
 # Settings location
-CONFIG_FILE="${HOME}/.config/coco-settings-manager/settings-gen.conf"
+CONFIG_DIR="${HOME}/.config/coco-settings-manager"
+CONFIG_EXT="gen.conf"
 
 
 # ------------------------------------------------------------------------------
 # Print Functions
 # ------------------------------------------------------------------------------
 
-print_title(){
+print_title() {
     echo -e "*** $1 ***"
 }
-print_error(){
+print_error() {
     echo -e "   ${COLOR_RED}*[ERROR] ${1}${COLOR_NORMAL}"
 }
-print_warning(){
+print_warning() {
     echo -e "    ${COLOR_YELLOW}[Warning] ${1}${COLOR_NORMAL}"
 }
-print_success(){
+print_success() {
     echo -e "    ${COLOR_GREEN}[SUCCESS]${COLOR_NORMAL} $1"
 }
-print_info(){
+print_info() {
     echo -e "    ${COLOR_GRAY}[INFO]${COLOR_NORMAL} $1"
 }
 
 # Print a message according to given error code.
 # Will display in red if error, or in green if ok.
 # \param 1 Message to display.
-print_exit_msg(){
+print_exit_msg() {
     if [ $? -ne 0 ]; then
         ERRORS_COUNTER=$((ERRORS_COUNTER + 1))
         print_error "$1"
@@ -63,7 +73,7 @@ print_exit_msg(){
 # Create a symlink.
 # \param 1 Source file (Absolute path).
 # \param 2 Symlink file (Absolute path).
-crea_ln(){
+crea_ln() {
     # File to link must exists
     if [ ! -e "$1" ]; then
         ERRORS_COUNTER=$((ERRORS_COUNTER + 1))
@@ -83,7 +93,7 @@ crea_ln(){
 
 # Create a repertory if doesn't exists.
 # \params 1 Folder to create (Full path).
-crea_rep(){
+crea_rep() {
     if [ -e "$1" ] && [ ! -d "$1" ]; then
         ERRORS_COUNTER=$((ERRORS_COUNTER + 1))
         print_error "$1 already exists and is a file"
@@ -100,7 +110,7 @@ crea_rep(){
 # Browser scripts folder and create the link with specific renaming rule.
 # \param 1 Source folder.
 # \param 2 Destination folder.
-crea_sh_ln(){
+crea_sh_ln() {
     # Script folder must exists
     if ! [ -e "$1" ]; then
         ERRORS_COUNTER=$((ERRORS_COUNTER + 1))
@@ -119,7 +129,7 @@ crea_sh_ln(){
 # This does not link the folder itself (But its content only).
 # \param 1 Source folder.
 # \param 2 Destination folder.
-crea_rep_ln(){
+crea_rep_ln() {
     # Folder must exists
     if ! [ -e "$1" ]; then
         ERRORS_COUNTER=$((ERRORS_COUNTER + 1))
@@ -136,7 +146,7 @@ crea_rep_ln(){
 
 # Execute a shell command.
 # \param 1 The shell command to execute.
-exec_cmd(){
+exec_cmd() {
     msg=$(eval "$1")
     print_exit_msg "Execute '$1' $msg"
 }
@@ -148,7 +158,7 @@ exec_cmd(){
 
 # Parse one line of the config file
 # \param 1 The line to parse
-parse_line(){
+parse_line() {
     line="$1"
     if [ -z "$line" ]; then
         return 1
@@ -176,31 +186,44 @@ parse_line(){
     esac
 }
 
-# Parse the entire file
-# \param 1 File to parse
-parse_file(){
+# Parse the entire file.
+# \param 1 File to parse.
+parse_file() {
     while read -r line ;do
         parse_line "$line"
     done < "$1"
+}
+
+# Parse all files with given extension in the path given.
+# \param 1 Path where to search
+# \param 2 File extension
+parse_all_files() {
+    list_files=$(find "$1" -name "*.$2" 2> '/dev/null')
+    if [ -z "$list_files" ]; then
+        echo -e "${COLOR_RED}[ERROR] $1 does not contains any config files (*.${2})${COLOR_NORMAL}"
+        return 42
+    fi
+    for file in $list_files ;do
+        parse_file "$file"
+    done
+    return 0
 }
 
 
 # ------------------------------------------------------------------------------
 # Script execution
 # ------------------------------------------------------------------------------
-
 echo "-------------------------------------------------------------------------"
 echo "Settings configuration"
 echo "-------------------------------------------------------------------------"
 
-# Source must exists
-if [ ! -e "$CONFIG_FILE" ] || [ ! -f "$CONFIG_FILE" ];then
-    print_error "Invalid config file '${CONFIG_FILE}'"
+# Config dir must exists
+if [ ! -d "$CONFIG_DIR" ];then
+    echo -e "${COLOR_RED}[ERROR] ${CONFIG_DIR} does exists or is not a folder...${COLOR_NORMAL}"
     exit 42
 fi
-echo "Config file: '${CONFIG_FILE}'"
 
-parse_file "$CONFIG_FILE"
+parse_all_files "$CONFIG_DIR" "$CONFIG_EXT"
 
 echo "-------------------------------------------------------------------------"
 if [ $ERRORS_COUNTER -ne 0 ]; then

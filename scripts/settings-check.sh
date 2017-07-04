@@ -1,17 +1,22 @@
 #!/bin/sh
 #
+# Since:    June 2017
+# Author:   Constantin Masson
+#
 # DESCRIPTION
 # This script checks whether all packages are installed and displays result
-# List of required packages is read from config file
-# Usual config file is ~.config/linux-settings-manager
+#
+# CONFIG FILE
+# Located at CONFIG_DIR with extension CONFIG_EXT
+# Script with process each of them
 #
 
 
 # ------------------------------------------------------------------------------
 # Constants / Vars
 # ------------------------------------------------------------------------------
-CONFIG_DIR="${HOME}/.config/coco-settings-manager"
-CONFIG_EXT="check.conf"
+CONFIG_DIR="${HOME}/.config/coco-settings-manager" # Where to search
+CONFIG_EXT="check.conf" # What to process
 
 # Internal use
 COUNT_TOTAL=0
@@ -69,9 +74,9 @@ parse_file() {
 # \param 1 Path where to search
 # \param 2 Extension of files to parse
 parse_all_files() {
-    list_files=$(find ${CONFIG_DIR} -name "*.${CONFIG_EXT}")
+    list_files=$(find "$1" -name "*.$2" 2> '/dev/null')
     if [ -z "$list_files" ]; then
-        echo -e "${COLOR_RED}[ERROR] ${CONFIG_DIR} does not contains any config files (*.${CONFIG_EXT})${COLOR_NORMAL}"
+        echo -e "${COLOR_RED}[ERROR] $1 does not contains any config files (*.${2})${COLOR_NORMAL}"
         return 42
     fi
     for file in $list_files ;do
@@ -88,6 +93,13 @@ echo "-----------------------------------"
 echo " Check Linux Packages"
 echo "-----------------------------------"
 
+# Config dir must exists
+if [ ! -d "$CONFIG_DIR" ];then
+    echo -e "${COLOR_RED}[ERROR] ${CONFIG_DIR} does exists or is not a folder...${COLOR_NORMAL}"
+    exit 42
+fi
+
+# Main processus
 parse_all_files "$CONFIG_DIR" "$CONFIG_EXT"
 
 # Show me the result!! :p
