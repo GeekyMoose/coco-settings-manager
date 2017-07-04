@@ -10,7 +10,8 @@
 # ------------------------------------------------------------------------------
 # Constants / Vars
 # ------------------------------------------------------------------------------
-CONFIG_FILE="${HOME}/.config/linux-settings-manager/settings-check.conf"
+CONFIG_DIR="${HOME}/.config/coco-settings-manager"
+CONFIG_EXT="check.conf"
 
 # Internal use
 COUNT_TOTAL=0
@@ -26,10 +27,10 @@ COLOR_GREEN="\033[32m"
 
 # Check whether package exists.
 # \param 1 Package name to test.
-check_package(){
+check_package() {
     COUNT_TOTAL=$((COUNT_TOTAL + 1))
     which "$1" > '/dev/null' 2>&1
-    if [ $? -eq 1 ]; then
+    if [ $? -ne 0 ]; then
         echo -e "   ${COLOR_RED}*[MISSING]${COLOR_NORMAL} $1"
         COUNT_MISSING=$((COUNT_MISSING + 1))
     else
@@ -38,13 +39,13 @@ check_package(){
 }
 
 # Display one section separator.
-show_section(){
+show_section() {
     echo '-' "$1"
 }
 
 # Parse the given file.
 # \param 1 The file to parse.
-parse_file(){
+parse_file() {
     # Config file must exist
     if [ ! -f "$1" ];then
         echo -e "${COLOR_RED}[ERROR] '$1' doesn't exists...${COLOR_NORMAL}"
@@ -64,6 +65,21 @@ parse_file(){
     return 0
 }
 
+# Parse all files in given dir that have given extension
+# \param 1 Path where to search
+# \param 2 Extension of files to parse
+parse_all_files() {
+    list_files=$(find ${CONFIG_DIR} -name "*.${CONFIG_EXT}")
+    if [ -z "$list_files" ]; then
+        echo -e "${COLOR_RED}[ERROR] ${CONFIG_DIR} does not contains any config files (*.${CONFIG_EXT})${COLOR_NORMAL}"
+        return 42
+    fi
+    for file in $list_files ;do
+        parse_file "$file"
+    done
+    return 0
+}
+
 
 # ------------------------------------------------------------------------------
 # SCRIPT EXECUTION
@@ -72,10 +88,9 @@ echo "-----------------------------------"
 echo " Check Linux Packages"
 echo "-----------------------------------"
 
-parse_file "$CONFIG_FILE"
+parse_all_files "$CONFIG_DIR" "$CONFIG_EXT"
 
 # Show me the result!! :p
 echo "-----------------------------------"
 echo " $COUNT_MISSING missing packages ($(($COUNT_TOTAL - $COUNT_MISSING))/$COUNT_TOTAL)"
 echo "-----------------------------------"
-return 0
