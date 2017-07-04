@@ -3,18 +3,18 @@
 # Since:    June 2017
 # Author:   Constantin Masson
 #
+#
 # DESCRIPTION
 # Generate all symlinks for your setting according to confi file content.
 #
 # CONFIG FILE
-# Located at CONFIG_DIR with extension CONFIG_EXT
+# Located at CONFIG_DIR and must have extension CONFIG_EXT
 # Script with process each of them
 #
-# WARNING
-# Symlink creation is currently forced, which means, if a file with same name
-# already exists, it will be replaced without warning!
-# Ex: crea_ln /mnt/data/settings/f1 ~/.config/toto/f1
-#       -> if ~/.conf/toto/f1 already exists, it will be deleted
+# NOTE ABOUT SYMLINKS CREATION
+# Default behavior is not to force symlinks creation.
+# If a file already exists, it won't be altered.
+# Use -f to force link creation (Warning: totally delete the old one)
 
 
 # -----------------------------------------------------------------------------
@@ -27,10 +27,43 @@ COLOR_YELLOW="\033[33m"
 COLOR_GRAY="\033[30m"
 # Global vars
 ERRORS_COUNTER=0
+SCRIPT_NAME=${0##*/} # Removes ./ before script name
+FLAGS_LN=
 
 # Settings location
 CONFIG_DIR="${HOME}/.config/coco-settings-manager"
 CONFIG_EXT="gen.conf"
+
+
+# ------------------------------------------------------------------------------
+# Args
+# ------------------------------------------------------------------------------
+show_usage_and_exit() {
+    echo "Usage: $SCRIPT_NAME [OPTION]..."
+    echo "  -h          Show this help"
+    echo "  -c          Use given file instead of default config files"
+    echo "  -f          Force create link even if already exists (WARNING: delete existing file)"
+    exit 0
+}
+
+# Process the arguments to look for options and apply them.
+# Use getops (See bash reference manual).
+#
+# \param 1 List of all parameters to parse and process.
+# \return Index of the first element following the last option.
+process_options() {
+    while getopts ":hc:f" optname; do
+        case $optname in
+            h) show_usage_and_exit ;; # Help
+            f) FLAGS_LN='-f' ;; # Force
+            c) echo -e "${COLOR_YELLOW}Option -$optname is not working yet...${COLOR_NORMAL}"; show_usage_and_exit ;; # Config
+            ?) show_usage_and_exit ;; # Unknown option
+            :) show_usage_and_exit ;; # Argument missing for option
+            *) show_usage_and_exit ;; # Should never occur anyway
+        esac
+    done
+    return $OPTIND
+}
 
 
 # ------------------------------------------------------------------------------
@@ -54,9 +87,10 @@ print_info() {
 }
 
 # Print a message according to given error code.
+#
 # Will display in red if error, or in green if ok.
 # \param 1 Message to display.
-print_exit_msg() {
+show_err_status() {
     if [ $? -ne 0 ]; then
         ERRORS_COUNTER=$((ERRORS_COUNTER + 1))
         print_error "$1"
@@ -71,6 +105,7 @@ print_exit_msg() {
 # ------------------------------------------------------------------------------
 
 # Create a symlink.
+#
 # \param 1 Source file (Absolute path).
 # \param 2 Symlink file (Absolute path).
 crea_ln() {
@@ -86,12 +121,13 @@ crea_ln() {
         print_error "$1 is not a file type (Only files allowed for symlinks)"
         return 42
     fi
-    msg=$(ln -vfs "$1" "$2" 2> '/dev/null') # Warn: Err is not coutch by msg..
-    print_exit_msg "$msg"
+    msg=$(ln -sv $FLAGS_LN "$1" "$2" 2>&1)
+    show_err_status "$msg"
     return 0
 }
 
 # Create a repertory if doesn't exists.
+#
 # \params 1 Folder to create (Full path).
 crea_rep() {
     if [ -e "$1" ] && [ ! -d "$1" ]; then
@@ -103,11 +139,12 @@ crea_rep() {
         print_info "folder $1 already exists"
         return 1
     fi
-    msg=$(mkdir -pv "$1" 2> '/dev/null') # Warn: Err is not catch by msg..
-    print_exit_msg "$msg"
+    msg=$(mkdir -pv "$1" 2>&1)
+    show_err_status "$msg"
 }
 
 # Browser scripts folder and create the link with specific renaming rule.
+#
 # \param 1 Source folder.
 # \param 2 Destination folder.
 crea_sh_ln() {
@@ -127,6 +164,7 @@ crea_sh_ln() {
 
 # Browser the current folder and link each files inside.
 # This does not link the folder itself (But its content only).
+#
 # \param 1 Source folder.
 # \param 2 Destination folder.
 crea_rep_ln() {
@@ -145,10 +183,11 @@ crea_rep_ln() {
 }
 
 # Execute a shell command.
+#
 # \param 1 The shell command to execute.
 exec_cmd() {
     msg=$(eval "$1")
-    print_exit_msg "Execute '$1' $msg"
+    show_err_status "Execute '$1' $msg"
 }
 
 
@@ -156,8 +195,9 @@ exec_cmd() {
 # Parse functions
 # ------------------------------------------------------------------------------
 
-# Parse one line of the config file
-# \param 1 The line to parse
+# Parse one line of the config file.
+#
+# \param 1 The line to parse.
 parse_line() {
     line="$1"
     if [ -z "$line" ]; then
@@ -187,6 +227,7 @@ parse_line() {
 }
 
 # Parse the entire file.
+#
 # \param 1 File to parse.
 parse_file() {
     while read -r line ;do
@@ -195,10 +236,11 @@ parse_file() {
 }
 
 # Parse all files with given extension in the path given.
-# \param 1 Path where to search
-# \param 2 File extension
+#
+# \param 1 Path where to search.
+# \param 2 File extension.
 parse_all_files() {
-    list_files=$(find "$1" -name "*.$2" 2> '/dev/null')
+    list_files=$(find "$1" -name "*.$2" 2>&1)
     if [ -z "$list_files" ]; then
         echo -e "${COLOR_RED}[ERROR] $1 does not contains any config files (*.${2})${COLOR_NORMAL}"
         return 42
@@ -213,6 +255,8 @@ parse_all_files() {
 # ------------------------------------------------------------------------------
 # Script execution
 # ------------------------------------------------------------------------------
+process_options "$@"
+
 echo "-------------------------------------------------------------------------"
 echo "Settings configuration"
 echo "-------------------------------------------------------------------------"
