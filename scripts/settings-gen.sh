@@ -20,7 +20,7 @@ COLOR_GRAY="\033[30m"
 ERRORS_COUNTER=0
 
 # Settings location
-CONFIG_FILE="${HOME}/settings-common/coco/config.gen.conf"
+CONFIG_FILE="${HOME}/.config/coco-settings-manager/settings-gen.conf"
 
 
 # ------------------------------------------------------------------------------

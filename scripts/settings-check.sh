@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------------------
 # Constants / Vars
 # ------------------------------------------------------------------------------
-CONFIG_FILE="${HOME}/.config/linux-settings-manager/list-packages.conf"
+CONFIG_FILE="${HOME}/.config/linux-settings-manager/settings-check.conf"
 
 # Internal use
 COUNT_TOTAL=0
