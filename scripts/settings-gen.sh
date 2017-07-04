@@ -36,13 +36,13 @@ CONFIG_EXT="gen.conf"
 
 
 # ------------------------------------------------------------------------------
-# Args
+# Args and Options
 # ------------------------------------------------------------------------------
 show_usage_and_exit() {
     echo "Usage: $SCRIPT_NAME [OPTION]..."
-    echo "  -h          Show this help"
-    echo "  -c          Use given file instead of default config files"
-    echo "  -f          Force create link even if already exists (WARNING: delete existing file)"
+    echo "  -h  Show this help"
+    echo "  -c  Use given file instead of default config files"
+    echo "  -f  Force create link even if already exists (WARNING: delete existing file)"
     exit 0
 }
 

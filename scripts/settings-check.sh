@@ -3,6 +3,7 @@
 # Since:    June 2017
 # Author:   Constantin Masson
 #
+#
 # DESCRIPTION
 # This script checks whether all packages are installed and displays result
 #
@@ -24,6 +25,36 @@ COUNT_MISSING=0
 COLOR_NORMAL="\033[0m"
 COLOR_RED="\033[31m"
 COLOR_GREEN="\033[32m"
+SCRIPT_NAME=${0##*/} # Removes ./ before script name
+
+
+# ------------------------------------------------------------------------------
+# Args and Options
+# ------------------------------------------------------------------------------
+show_usage_and_exit() {
+    echo "Usage: $SCRIPT_NAME [OPTION]..."
+    echo "  -h  Show this help"
+    echo "  -c Use a specific config file instead of defaults"
+    exit 0
+}
+
+# Process the arguments to look for options and apply them.
+# Use getops (See bash reference manual).
+#
+# \param 1 List of all parameters to parse and process.
+# \return Index of the first element following the last option.
+process_options() {
+    while getopts ":hc:f" optname; do
+        case $optname in
+            h) show_usage_and_exit ;; # Help
+            c) config_file=$OPTARG ;; # Use config file
+            ?) show_usage_and_exit ;; # Unknown option
+            :) show_usage_and_exit ;; # Argument missing for option
+            *) show_usage_and_exit ;; # Should never occur anyway
+        esac
+    done
+    return $OPTIND
+}
 
 
 # ------------------------------------------------------------------------------
@@ -89,18 +120,30 @@ parse_all_files() {
 # ------------------------------------------------------------------------------
 # SCRIPT EXECUTION
 # ------------------------------------------------------------------------------
+process_options "$@"
+
 echo "-----------------------------------"
 echo " Check Linux Packages"
 echo "-----------------------------------"
 
-# Config dir must exists
-if [ ! -d "$CONFIG_DIR" ];then
-    echo -e "${COLOR_RED}[ERROR] ${CONFIG_DIR} does exists or is not a folder...${COLOR_NORMAL}"
-    exit 42
-fi
+# If file given in parameter, process it instead of default behavior
+if [ ! -z $config_file ]; then
+    # Config file must exists and be a file
+    if [ ! -f "$config_file" ];then
+        echo -e "${COLOR_RED}[ERROR] ${config_file} does exists or is not a file...${COLOR_NORMAL}"
+        exit 42
+    fi
+    parse_file "$config_file"
+else
+    # Config dir must exists
+    if [ ! -d "$CONFIG_DIR" ];then
+        echo -e "${COLOR_RED}[ERROR] ${CONFIG_DIR} does exists or is not a folder...${COLOR_NORMAL}"
+        exit 42
+    fi
 
-# Main processus
-parse_all_files "$CONFIG_DIR" "$CONFIG_EXT"
+    # Main processus
+    parse_all_files "$CONFIG_DIR" "$CONFIG_EXT"
+fi
 
 # Show me the result!! :p
 echo "-----------------------------------"
