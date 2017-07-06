@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Since:    June 2017
 # Author:   Constantin Masson
