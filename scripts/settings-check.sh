@@ -33,8 +33,11 @@ SCRIPT_NAME=${0##*/} # Removes ./ before script name
 # ------------------------------------------------------------------------------
 show_usage_and_exit() {
     echo "Usage: $SCRIPT_NAME [OPTION]..."
-    echo "  -h  Show this help"
-    echo "  -c Use a specific config file instead of defaults"
+    echo "Check each package listed by configuration files and shows its installation status."
+    echo "Looks for all config files under $CONFIG_DIR directory."
+    echo "Config file is any file that end with extension $CONFIG_EXT."
+    echo "  -h  Show this help."
+    echo "  -c Use a specific config file instead of defaults."
     exit 0
 }
 

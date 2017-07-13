@@ -40,9 +40,12 @@ CONFIG_EXT="gen.conf"
 # ------------------------------------------------------------------------------
 show_usage_and_exit() {
     echo "Usage: $SCRIPT_NAME [OPTION]..."
-    echo "  -h  Show this help"
-    echo "  -c  Use given file instead of default config files"
-    echo "  -f  Force create link even if already exists (WARNING: delete existing file)"
+    echo "Generate the configuration decribed by the configuration files."
+    echo "Looks for all config files under $CONFIG_DIR directory."
+    echo "Config file is any file that end with extension $CONFIG_EXT."
+    echo "  -h  Show this help."
+    echo "  -c  Use given file instead of default config files."
+    echo "  -f  Force create link even if already exists (WARNING: delete existing file)."
     exit 0
 }
 
