@@ -3,18 +3,9 @@
 # Since:    June 2017
 # Author:   Constantin Masson
 #
-#
 # DESCRIPTION
 # Generate all symlinks for your setting according to confi file content.
-#
-# CONFIG FILE
-# Located at CONFIG_DIR and must have extension CONFIG_EXT
-# Script with process each of them
-#
-# NOTE ABOUT SYMLINKS CREATION
-# Default behavior is not to force symlinks creation.
-# If a file already exists, it won't be altered.
-# Use -f to force link creation (Warning: totally delete the old one)
+# See help for the behaviors (And don't forget to update the help if changes made)
 
 
 # -----------------------------------------------------------------------------
@@ -26,7 +17,7 @@ COLOR_GREEN="\033[32m"
 COLOR_YELLOW="\033[33m"
 COLOR_GRAY="\033[30m"
 # Global vars
-ERRORS_COUNTER=0
+ERROR_COUNTER=0
 SCRIPT_NAME=${0##*/} # Removes ./ before script name
 FLAGS_LN=
 
@@ -46,6 +37,10 @@ show_usage_and_exit() {
     echo "  -h  Show this help."
     echo "  -c  Use given file instead of default config files."
     echo "  -f  Force create link even if already exists (WARNING: delete existing file)."
+    echo ""
+    echo "Default behavior is not to force symlinks creation."
+    echo "If a file already exists, it won't be altered."
+    echo "Use -f to force link creation (Warning: totally delete the old one)"
     exit 0
 }
 
@@ -95,7 +90,7 @@ print_info() {
 # \param 1 Message to display.
 show_err_status() {
     if [ $? -ne 0 ]; then
-        ERRORS_COUNTER=$((ERRORS_COUNTER + 1))
+        ERROR_COUNTER=$((ERROR_COUNTER + 1))
         print_error "$1"
     else
         print_success "$1"
@@ -114,13 +109,13 @@ show_err_status() {
 crea_ln() {
     # File to link must exists
     if [ ! -e "$1" ]; then
-        ERRORS_COUNTER=$((ERRORS_COUNTER + 1))
+        ERROR_COUNTER=$((ERROR_COUNTER + 1))
         print_error "$1 doesn't exists..."
         return 42
     fi
     # Only link to file allowed (Not folder)
     if [ ! -f "$1" ];then
-        ERRORS_COUNTER=$((ERRORS_COUNTER + 1))
+        ERROR_COUNTER=$((ERROR_COUNTER + 1))
         print_error "$1 is not a file type (Only files allowed for symlinks)"
         return 42
     fi
@@ -134,7 +129,7 @@ crea_ln() {
 # \params 1 Folder to create (Full path).
 crea_rep() {
     if [ -e "$1" ] && [ ! -d "$1" ]; then
-        ERRORS_COUNTER=$((ERRORS_COUNTER + 1))
+        ERROR_COUNTER=$((ERROR_COUNTER + 1))
         print_error "$1 already exists and is a file"
         return 1
     fi
@@ -153,7 +148,7 @@ crea_rep() {
 crea_sh_ln() {
     # Script folder must exists
     if ! [ -e "$1" ]; then
-        ERRORS_COUNTER=$((ERRORS_COUNTER + 1))
+        ERROR_COUNTER=$((ERROR_COUNTER + 1))
         print_error "$1 doesn't exists..."
         return 42
     fi
@@ -173,7 +168,7 @@ crea_sh_ln() {
 crea_rep_ln() {
     # Folder must exists
     if ! [ -e "$1" ]; then
-        ERRORS_COUNTER=$((ERRORS_COUNTER + 1))
+        ERROR_COUNTER=$((ERROR_COUNTER + 1))
         print_error "$1 doesn't exists..."
         return 42
     fi
@@ -283,8 +278,8 @@ fi
 
 
 echo "-------------------------------------------------------------------------"
-if [ $ERRORS_COUNTER -ne 0 ]; then
-    echo -e " $ERRORS_COUNTER Errors"
+if [ $ERROR_COUNTER -ne 0 ]; then
+    echo -e " $ERROR_COUNTER Errors"
 else
     echo -e " Finished successfully"
 fi

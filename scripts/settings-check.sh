@@ -3,14 +3,9 @@
 # Since:    June 2017
 # Author:   Constantin Masson
 #
-#
 # DESCRIPTION
 # This script checks whether all packages are installed and displays result
-#
-# CONFIG FILE
-# Located at CONFIG_DIR with extension CONFIG_EXT
-# Script with process each of them
-#
+# See help for the behaviors (And don't forget to update the help if changes made)
 
 
 # ------------------------------------------------------------------------------
