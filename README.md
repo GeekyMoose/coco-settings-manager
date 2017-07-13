@@ -25,7 +25,7 @@ The first time, I run `./settings-gen.sh -c /path/to/config/myGenConfig.gen.conf
 # Install
 > Installation is not required.
 > You can still start the scripts with `-c` option and a config file.
-</br>
+> </br>
 > Example: `./settings-gen.sh -c /path/to/config/myGenConfig.gen.conf`
 
 - Run `install.sh`
