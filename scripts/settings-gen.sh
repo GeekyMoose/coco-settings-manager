@@ -56,7 +56,7 @@ process_options() {
         case $optname in
             h) show_usage_and_exit ;; # Help
             f) FLAGS_LN='-f' ;; # Force
-            c) echo -e "${COLOR_YELLOW}Option -$optname is not working yet...${COLOR_NORMAL}"; show_usage_and_exit ;; # Config
+            c) config_file=$OPTARG ;; # Use config file
             ?) show_usage_and_exit ;; # Unknown option
             :) show_usage_and_exit ;; # Argument missing for option
             *) show_usage_and_exit ;; # Should never occur anyway
@@ -261,13 +261,23 @@ echo "-------------------------------------------------------------------------"
 echo "Settings configuration"
 echo "-------------------------------------------------------------------------"
 
-# Config dir must exists
-if [ ! -d "$CONFIG_DIR" ];then
-    echo -e "${COLOR_RED}[ERROR] ${CONFIG_DIR} does exists or is not a folder...${COLOR_NORMAL}"
-    exit 42
+# If file given in parameter, process it instead of default behavior
+if [ ! -z $config_file ]; then
+    # Config file must exists and be a file
+    if [ ! -f "$config_file" ];then
+        echo -e "${COLOR_RED}[ERROR] ${config_file} does exists or is not a file...${COLOR_NORMAL}"
+        exit 42
+    fi
+    parse_file "$config_file"
+else
+    # Config dir must exists
+    if [ ! -d "$CONFIG_DIR" ];then
+        echo -e "${COLOR_RED}[ERROR] ${CONFIG_DIR} does exists or is not a folder...${COLOR_NORMAL}"
+        exit 42
+    fi
+    parse_all_files "$CONFIG_DIR" "$CONFIG_EXT"
 fi
 
-parse_all_files "$CONFIG_DIR" "$CONFIG_EXT"
 
 echo "-------------------------------------------------------------------------"
 if [ $ERRORS_COUNTER -ne 0 ]; then
