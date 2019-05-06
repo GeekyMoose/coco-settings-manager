@@ -1,18 +1,14 @@
 #!/bin/bash
 #
-# Since:    June 2017
-# Author:   Constantin Masson
-#
-# DESCRIPTION
-# This script checks whether all packages are installed and displays result
-# See help for the behaviors (And don't forget to update the help if changes made)
+# This script checks whether all packages are installed and displays the results
+# See the help for the behaviors
 
 
 # ------------------------------------------------------------------------------
 # Constants / Vars
 # ------------------------------------------------------------------------------
-CONFIG_DIR="${HOME}/.config/coco-settings-manager" # Where to search
-CONFIG_EXT="check.conf" # What to process
+CONFIG_DIR="${HOME}/.config/coco/"
+CONFIG_EXT="check.conf"
 
 # Internal use
 COUNT_TOTAL=0

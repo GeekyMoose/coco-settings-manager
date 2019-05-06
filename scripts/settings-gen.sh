@@ -1,11 +1,7 @@
 #!/bin/bash
 #
-# Since:    June 2017
-# Author:   Constantin Masson
-#
-# DESCRIPTION
-# Generate all symlinks for your setting according to confi file content.
-# See help for the behaviors (And don't forget to update the help if changes made)
+# Generates all symlinks for your setting according to the config file.
+# See help for the behaviors
 
 
 # -----------------------------------------------------------------------------
@@ -22,8 +18,8 @@ SCRIPT_NAME=${0##*/} # Removes ./ before script name
 FLAGS_LN=
 
 # Settings location
-CONFIG_DIR="${HOME}/.config/coco-settings-manager"
-CONFIG_EXT="gen.conf"
+CONFIG_DIR="${HOME}/.config/coco/" # Where to search
+CONFIG_EXT="gen.conf" # File ext to process
 
 
 # ------------------------------------------------------------------------------
