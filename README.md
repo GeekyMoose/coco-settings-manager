@@ -1,45 +1,47 @@
-# Settings Manager
-Coco settings manager generates your configuration and checks if all your packages are installed.
-This is useful to automatically set all your default GNU/Linux settings like terminals, editors, Window Managers etc.
-The script print all its execution status so that you know if something went wrong (Bad path, missing file...).
-Special configuration files are used to define your settings. (See config files section)
+# Coco Settings Manager
 
-> WARNING: WORK IN PROGRESS </br>
-> This project is under work and is subject to changes.
-> I also plan to rewrite it in C++.
-> I keep these bash scripts anyway.
-> Also, I will add some better documentation as soon as possible.
+> Disclaimer: don't use this. I did this during my studies to sync my dotfiles. Turns out there are better ways to do this, such as using stow or git tricks (see link).
 
+- <https://news.ycombinator.com/item?id=11070797>
+- <https://www.atlassian.com/git/tutorials/dotfiles>
+- <https://www.reddit.com/r/linux/comments/afund1/manage_your_dotfiles_with_style_gnu_stow/>
+- <https://www.gnu.org/software/stow/>
 
-# How I'm using this script
-I use it to synchronize my settings across several computers.
-I personally place all my settings on a git folder accessible from anywhere.
-Just clone it on the new computer. (Usually, I place it in my data partition and create symlink on my home)
-Then, I start this script with the configuration file I need. (The gen.conf file).
-Note that, this gen.conf file itself is in my configuration folder.
-</br>
-The first time, I run `./settings-gen.sh -c /path/to/config/myGenConfig.gen.conf`.
-(After that, I usually install this manager for next uses)
+## Description
 
+Coco settings manager generates symlinks according to your configuration.
+The script prints its execution status so that you know if something went wrong (e.g., wrong path, missing file, missing file).
 
-# Install
+## How I use this script
+
+I use this script it to synchronize my settings across several computers.
+I place all my settings in a git folder accessible from anywhere.
+Just clone it on the new computer, then, I start this script with the configuration file I need (the `gen.conf` file).
+Note that, this `gen.conf` file itself is in my configuration folder.
+
+The first time, I run `./settings-gen.sh -c /path/to/config/myGenConfig.gen.conf`
+(then, I install this manager for next uses)
+
+## Usage
+
 > Installation is not required.
 > You can still start the scripts with `-c` option and a config file.
-> </br>
-> Example: `./settings-gen.sh -c /path/to/config/myGenConfig.gen.conf`
+
+```bash
+# Getting started without installation
+`./settings-gen.sh -c /path/to/config/myGenConfig.gen.conf`
+```
 
 - Run `install.sh`
 - This creates the config directory `~/.config/coco-settings-manager`
-- This also places the scripts in your bin:
-    - `settings-check.sh` copied in `~/.local/bin/coco-settings-check`
-    - `settings-gen.sh` copied in `~/.local/bin/coco-settings-gen`
+- This also places the scripts in your `bin` directory
+  - `settings-check.sh` copied in `~/.local/bin/coco-settings-check`
+  - `settings-gen.sh` copied in `~/.local/bin/coco-settings-gen`
+- Note the 'coco' prefix added for easy tab completion.
+- Don't forget to have `~/.local/bin` in your path.
 
-> Don't forget to add `~/.local/bin` to your path in not already.
-> </br>
-> Note the 'coco' prefix so that you can enter coco and use tab for completion.
+## Scripts
 
-
-# Scripts
 - `settings-gen.sh`
     </br>
     Generate the configuration listed in gen files (.gen.conf).
@@ -54,34 +56,29 @@ The first time, I run `./settings-gen.sh -c /path/to/config/myGenConfig.gen.conf
     Without options, executes all valid check files placed in `~/.config/coco-settings-manager`.
     > Use -h option to display help
 
+## Configuration files
 
-# Configuration files
+### File setting-gen
 
-## Setting-gen configuration file
 > Used by `settings-gen.sh` script.
 
-### Syntax
-- `# This is a comment`     -> A comment
+#### Syntax
+
+- `# This is a comment`
 - `crea_ln src dest`        -> create a symlink from src to dest.
-- `crea_rep dest`           -> Create the 'dest' repertory (Can be ~/a/b/c).
-- `crea_rep_ln src dest`    -> Create a symlink of each file inside src and place 
-                                in dest folder.
-- `crea_sh_ln src dest`     -> Like crea_rep_ln but add a prefix before link.
-                                I use this for scripts, so that I enter zozo 
-                                and just tabulation to have completion.
-                                (I'll had possibility to set your how prefix).
-- `print_title title`       -> Simply print the title during execution.
-- `print_warning msg`       -> Print a warning (I use this for manual action to
-                                do after the execution).
+- `crea_rep dest`           -> Create the 'dest' repertory (can be `~/a/b/c`).
+- `crea_rep_ln src dest`    -> Create a symlink of each file inside src and place in dest folder.
+- `crea_sh_ln src dest`     -> Like crea_rep_ln but add a prefix before the link. (I use this for scripts for easy tab auto completion).
+- `print_title title`       -> Print the title during execution.
+- `print_warning msg`       -> Print a warning (I use this for manual action to do after the execution).
 - `exec_cmd command`        -> Arbitrary execute the given command. (See example)
 
-> If you find something ambiguous, check the script source code. Might help.
+#### Example (Gen config file)
 
-### Example (Gen config file)
 > File `myGenConfig.gen.conf`
 
-```
-# Terminal (Terminator)
+```bash
+# Terminal (terminator)
 show_title "Terminals (Terminator, urxvt)"
 crea_rep                                                            "~/.config/terminator"
 crea_ln "~/settings-common/terminator/config"                       "~/.config/terminator/config"
@@ -103,7 +100,7 @@ show_title "Scripts"
 crea_rep                                                            "~/.local/bin"
 crea_sh_ln "~/settings-common/scripts"                             "~/.local/bin"
 
-# Arbitrary command (Execute xrdb with parameter ~.Xresources)
+# Arbitrary command (execute xrdb with parameter ~.Xresources)
 execute xrdb "~/.Xresources"
 
 # Other
@@ -112,21 +109,22 @@ show_warning "Install fonts from 'https://github.com/powerline/fonts'"
 show_warning "~/.local/bin must be added in the path"
 ```
 
+### File setting-check
 
-## Setting-check configuration file
 > Used by `settings-check.sh` script.
 
-### Syntax
-- `# Title` -> Simply print the title.
+#### Check Syntax
+
+- `# Title` -> Print the title.
 - `pkgX`    -> Check whether pkgX is installed and print result.
 
-> There is no way to comment yet, but I will probably set # as a comment
-> and add a command to print title.
+> There is no way to comment.
 
-### Example (check config file)
+#### Example (check config file)
+
 > File `myCheckConfig.check.conf`
 
-```
+```bash
 # WORKSPACE
 awesome
 i3
@@ -171,12 +169,6 @@ pdflatex
 atril
 ```
 
+## Wait! Who is Coco
 
-# Wait! Who is Coco???
-Coco is a Rabbit! He's nice and likes carrot (Because he's not a stereotype).
-I will probably do a draw of him to show you his face, though I'll have to go back on my (poor) illustrator skills.
-
-
-# Author
-- Constantin Masson ([Geekymoose](https://github.com/GeekyMoose) / [constantinmasson.com](http://constantinmasson.com))
-
+Coco is a Rabbit! He's nice and likes carrot (because he's not a stereotype).
